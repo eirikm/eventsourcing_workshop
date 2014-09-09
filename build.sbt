@@ -20,4 +20,8 @@ val unfiltered = Seq(
   "com.jteigen" % "linx_2.10" % "0.1"
 )
 
-libraryDependencies ++= akkaLibs ++ testLibs ++ unfiltered
+val scalaz = Seq(
+  "org.scalaz" % "scalaz-core" % "7.1.0"
+)
+
+libraryDependencies ++= akkaLibs ++ testLibs ++ unfiltered ++ scalaz
