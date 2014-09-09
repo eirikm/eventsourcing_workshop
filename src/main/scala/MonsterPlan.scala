@@ -1,5 +1,4 @@
 import akka.actor.ActorSystem
-import akka.persistence.Update
 import akka.util.Timeout
 import unfiltered.filter.Plan
 import unfiltered.filter.Plan.Intent
@@ -77,7 +76,7 @@ class MonsterPlan
 
     case POST(Path(urls.authLogin(username))) => Ok
 
-    case POST(Path(Seg("service" :: "basket" :: monsterTypeName :: Nil))) =>
+    case POST(Path(urls.basketPost(monsterTypeName))) =>
       spike ! AddMonsterToBasket(BasketId("0"), monsterByType(MonsterType(monsterTypeName)))
       Thread.sleep(50)
       Ok
