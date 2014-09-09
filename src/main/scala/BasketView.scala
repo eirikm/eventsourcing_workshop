@@ -2,7 +2,7 @@ import akka.actor.Props
 import akka.persistence.PersistentView
 
 object BasketViewProtocol {
-  case class GetSum(id: BasketId) extends AnyVal
+  case class GetSum(id: BasketId)
   case class Sum(id: BasketId, sum: Int)
 }
 

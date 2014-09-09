@@ -4,20 +4,76 @@ import unfiltered.filter.Plan.Intent
 import unfiltered.request._
 import unfiltered.response._
 
+import linx._
+object urls {
+  //basketService
+  val service = Root / "service"
+  val basket = Root / "service" / "basket"
+  val basketPost = basket / 'id
+  val basketSum = basket / "sum"
+
+  // orderService
+  val orders = service / "orders"
+  val order = orders / 'aggregateId
+
+  // authService
+  val authLogin = service / "auth" / "logIn" / 'username
+  val authLogout = service / "auth" / "logOut"
+  val authCustomer = service / "auth" / "customer"
+  // monsterService
+  val monsterTypes = service / "monsterTypes"
+}
+
 class MonsterPlan
   extends Monsters
   with Plan {
+  def makeMockOrders ={
+    """
+      |{"foo123" : {"date" : "2014-01-01",
+      |"sum" : 1000,
+      |"orderLineItems" : [
+      |{"name" : "Olav Thon", "number": 4, "price" : 10000 }
+      |]
+      |}}
+    """.stripMargin
 
+  }
+
+  def basketJson:String = {
+    """
+      |{"name" : "foo",
+      |"number" : 1 ,
+      |"price" : 100 }
+    """.stripMargin
+
+
+  }
   val system: ActorSystem = ActorSystem("foo")
   val spike = system.actorOf(Spike.props)
   val basketView = system.actorOf(BasketView.props)
 
   override def intent: Intent = {
-    case POST(Path(urls.authLogin(username))) =>
-//    case POST(Path(Seg("service" :: "auth" :: "logIn" :: username :: Nil))) =>
+    case GET(Path(Seg("service" :: "auth" :: "customer" :: Nil))) => Ok ~> ResponseString("""{ "customerName": "rulle"}""")
+
+    case GET(Path(Seg("service" :: "auth" :: "logOut" :: Nil))) => Ok
+
+    case GET(Path(urls.basket())) => Ok ~> ResponseString(basketJson)
+
+    case GET(Path(urls.monsterTypes())) => Ok ~> ResponseString(monsterTypesAsJson)
+
+    case GET(Path(urls.basketSum())) => Ok ~> ResponseString("""{"sum" : 100000}""")
+
+    case GET(Path(urls.orders())) => Ok ~> ResponseString(makeMockOrders)
+
+    case POST(Path(urls.authLogin(username))) => Ok
+
+
+    case POST(Path(Seg("service" :: "auth" :: "logIn" :: username :: Nil))) =>
       Ok
 
-    case POST(Path(urls.basketPost(monsterTypeName))) =>
+
+    case POST(Path(Seg("service" :: "basket" :: monsterTypeName :: Nil))) =>
+//    urls.basketPost(monsterTypeName))) =>
       spike ! AddMonsterToBasket(BasketId("0"), monsterByType(MonsterType(monsterTypeName)))
       Ok
 
@@ -26,6 +82,7 @@ class MonsterPlan
 }
 
 trait Monsters {
+
   val monsterTypes = Vector(
     Monster(MonsterType("Ao (skilpadde)"), Price(100000)),
     Monster(MonsterType("Bakeneko"), Price(120000)),
@@ -78,23 +135,3 @@ case class BasketLine(monsterType: MonsterType, price: Price, amount: Int)
 case class OrderConfirmation(orderId: OrderId)
 case class Order(orderId: OrderId, lines: Vector[OrderLine])
 case class OrderLine(monsterType: MonsterType, price: Price, amount: Int)
-
-import linx._
-object urls {
-  //basketService
-  val service = Root / "service"
-  val basket = Root / "service" / "basket"
-  val basketPost = basket / 'id
-  val basketSum = basket / "sum"
-
-  // orderService
-  val orders = service / "orders"
-  val order = orders / 'aggregateId
-
-  // authService
-  val authLogin = service / "auth" / "logIn" / 'username
-  val authLogout = service / "auth" / "logOut"
-  val authCustomer = service / "auth" / "customer"
-  // monsterService
-  val monsterTypes = service / "monsterTypes"
-}
