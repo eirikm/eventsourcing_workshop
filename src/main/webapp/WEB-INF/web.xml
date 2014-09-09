@@ -6,7 +6,7 @@
 
     <filter>
         <filter-name>billanPlan</filter-name>
-        <filter-class>no.penger.objektlan.web.BillanPlan</filter-class>
+        <filter-class>MonsterPlan</filter-class>
     </filter>
 
     <filter-mapping>

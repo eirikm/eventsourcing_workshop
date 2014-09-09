@@ -1,13 +1,13 @@
+import unfiltered.filter.Plan
+import unfiltered.filter.Plan.Intent
 import unfiltered.request._
 import unfiltered.response._
 
-object MonsterShop extends App {
+class MonsterPlan extends Plan {
 
-  val echo = unfiltered.filter.Planify {
+  override def intent: Intent = {
     case Path(Seg("fisk" :: p :: Nil)) => ResponseString(p)
   }
-
-  unfiltered.jetty.Server.local(8080).plan(echo).run()
 }
 
 import linx._
