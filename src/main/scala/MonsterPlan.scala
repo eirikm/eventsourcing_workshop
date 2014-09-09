@@ -1,7 +1,6 @@
 import akka.actor.ActorSystem
 import unfiltered.filter.Plan
 import unfiltered.filter.Plan.Intent
-import unfiltered.filter.request.ContextPath
 import unfiltered.request._
 import unfiltered.response._
 
