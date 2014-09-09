@@ -11,7 +11,8 @@ val system: ActorSystem = ActorSystem("foo")
   val spike = system.actorOf(Spike.props)
 
   override def intent: Intent = {
-    case POST(Path( urls.basketPost(monsterType))) => spike !AddMonsterToBasket(BasketId("0") ,Monster()) extends Command
+    case POST(Path( urls.basketPost(monsterType))) => spike !AddMonsterToBasket(BasketId("0") ,monsterByType(MonsterType(monsterType)))
+      Ok
 
     case Path(Seg("fisk" :: p :: Nil)) => ResponseString(p)
   }
