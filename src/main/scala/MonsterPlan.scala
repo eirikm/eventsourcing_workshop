@@ -37,7 +37,10 @@ class MonsterPlan extends Plan {
     Monster(MonsterType("Vampyr"), Price(420000)),
     Monster(MonsterType("Varulv"), Price(69000)))
 
-  val monstersByType = monsterTypes.groupBy(_.monsterType)
+  val monsterByType: Map[MonsterType, Monster] =
+    monsterTypes.map {
+      monster => monster.monsterType -> monster
+    }.toMap
 }
 
 case class BasketId(asString: String) extends AnyVal
