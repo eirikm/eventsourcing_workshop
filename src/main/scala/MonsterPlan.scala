@@ -1,3 +1,4 @@
+import akka.actor.ActorSystem
 import unfiltered.filter.Plan
 import unfiltered.filter.Plan.Intent
 import unfiltered.request._
@@ -6,8 +7,12 @@ import unfiltered.response._
 class MonsterPlan
   extends Plan
   with Monsters {
+val system: ActorSystem = ActorSystem("foo")
+  val spike = system.actorOf(Spike.props)
 
   override def intent: Intent = {
+    case POST(Path( urls.basketPost(monsterType))) => spike !AddMonsterToBasket(BasketId("0") ,Monster()) extends Command
+
     case Path(Seg("fisk" :: p :: Nil)) => ResponseString(p)
   }
 }

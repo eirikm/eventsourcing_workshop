@@ -1,5 +1,6 @@
 import java.io.File
 
+import akka.actor.ActorSystem
 import org.eclipse.jetty.server.Handler
 import org.eclipse.jetty.util.resource.ResourceCollection
 import org.eclipse.jetty.webapp.WebAppContext
