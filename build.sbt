@@ -1,6 +1,6 @@
 name := "eventsource_workshop"
 
-scalaVersion := "2.11.2"
+scalaVersion := "2.10.4"
 
 val versionAkka = "2.3.6"
 val akkaLibs = Seq(
@@ -17,7 +17,7 @@ val versionUnfiltered = "0.8.1"
 val unfiltered = Seq(
   "net.databinder" %% "unfiltered-filter" % versionUnfiltered,
   "net.databinder" %% "unfiltered-jetty" % versionUnfiltered,
-  "com.jteigen" % "linx_2.10" % "0.1"
+  "com.jteigen" %% "linx" % "0.1"
 )
 
 libraryDependencies ++= akkaLibs ++ testLibs ++ unfiltered
