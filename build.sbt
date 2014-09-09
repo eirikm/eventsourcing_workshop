@@ -16,8 +16,8 @@ val testLibs = Seq(
 val versionUnfiltered = "0.8.1"
 val unfiltered = Seq(
   "net.databinder" %% "unfiltered-filter" % versionUnfiltered,
-  "net.databinder" %% "unfiltered-jetty" % versionUnfiltered
+  "net.databinder" %% "unfiltered-jetty" % versionUnfiltered,
+  "com.jteigen" % "linx_2.10" % "0.1"
 )
 
-libraryDependencies ++= akkaLibs ++ testLibs ++ unfilter
-ed
+libraryDependencies ++= akkaLibs ++ testLibs ++ unfiltered
