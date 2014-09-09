@@ -10,13 +10,27 @@ class MonsterPlan extends Plan {
   }
 }
 
+case class BasketId(asString: String) extends AnyVal
+case class Price(asLong: Long) extends AnyVal
+case class OrderId(asString: String) extends AnyVal
+
+sealed trait MonsterType
+case class Monster(monsterType: MonsterType)
+case class Basket(id: BasketId, baskeLines: Vector[BasketLine])
+case class BasketLine(monsterType: MonsterType, price: Price, amount: Int)
+
+case class OrderConfirmation(orderId: OrderId)
+case class Order(orderId: OrderId, lines: Vector[OrderLine])
+case class OrderLine(monsterType: MonsterType, price: Price, amount: Int)
+
 import linx._
 object urls {
   //basketService
   val service = Root / "service"
   val basket = Root / "service" / "basket"
   val basketPost = basket / 'id
-  val basketSump = basket / "sum"
+  val basketSum = basket / "sum"
+
   // orderService
   val orders = service / "orders"
   val order = orders / 'aggregateId
