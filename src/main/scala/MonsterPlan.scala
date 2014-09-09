@@ -53,6 +53,11 @@ trait Monsters {
     Monster(MonsterType("Vampyr"), Price(420000)),
     Monster(MonsterType("Varulv"), Price(69000)))
 
+  val monsterTypesAsJson: String = monsterTypes.map {
+    monster =>
+      s"""{ name: "${monster.monsterType.asString}", price: ${monster.price.asInt} }"""
+  }.mkString("[", ",", "]")
+
   val monsterByType: Map[MonsterType, Monster] =
     monsterTypes.map {
       monster => monster.monsterType -> monster
