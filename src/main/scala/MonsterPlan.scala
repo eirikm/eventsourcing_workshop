@@ -1,4 +1,5 @@
 import akka.actor.ActorSystem
+import akka.persistence.Update
 import akka.util.Timeout
 import unfiltered.filter.Plan
 import unfiltered.filter.Plan.Intent
@@ -44,7 +45,7 @@ class MonsterPlan
   import BasketViewProtocol._
 
   override def intent: Intent = {
-    case GET(Path( urls.authCustomer() )) => Ok ~> ResponseString(customerJson)
+    case GET(Path(urls.authCustomer())) => Ok ~> ResponseString(customerJson)
 
     case GET(Path(urls.authLogout())) => Ok
 
@@ -66,6 +67,10 @@ class MonsterPlan
     case GET(Path(urls.monsterTypes())) => Ok ~> ResponseString(monsterTypesAsJson)
 
     case GET(Path(urls.basketSum())) =>
+      val sumFut = ask(basketView, GetSum(BasketId("0")))(Timeout(5.seconds)).mapTo[Sum]
+      val sum = Await.result(sumFut, Duration.Inf)
+      val sumJson = s"""{ "sum": ${sum.sum} }"""
+
       Ok ~> ResponseString(sumJson)
 
     case GET(Path(urls.orders())) => Ok ~> ResponseString(makeMockOrders)
@@ -74,6 +79,12 @@ class MonsterPlan
 
     case POST(Path(Seg("service" :: "basket" :: monsterTypeName :: Nil))) =>
       spike ! AddMonsterToBasket(BasketId("0"), monsterByType(MonsterType(monsterTypeName)))
+      Thread.sleep(50)
+      Ok
+
+    case DELETE(Path(urls.basketPost(monsterTypeName))) =>
+      spike ! RemoveMonsterFromBasket(BasketId("0"), monsterByType(MonsterType(monsterTypeName)))
+      Thread.sleep(50)
       Ok
   }
 }
