@@ -29,6 +29,17 @@ class BasketView extends PersistentView {
 
       basket = basket.updated(monster.monsterType, basketLine.copy(amount = basketLine.amount + 1))
 
+    case RemoveMonsterFromBasket(_, monster) =>
+      println("removing monster from basket")
+      val basketLine = basket.get(monster.monsterType).filter(_.amount > 1)
+
+      if (basketLine.isDefined) {
+        val b = basketLine.get
+        basket = basket.updated(monster.monsterType, b.copy(amount = b.amount - 1))
+      } else {
+        basket -= monster.monsterType
+      }
+
     case msg =>
       println(s"view received: $msg")
   }
@@ -39,6 +50,5 @@ class BasketView extends PersistentView {
         line => line.price.asInt * line.amount
       }.sum
       sender ! Sum(id, sum)
-
   }
 }
