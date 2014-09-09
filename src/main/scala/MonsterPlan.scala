@@ -1,17 +1,24 @@
 import akka.actor.ActorSystem
 import unfiltered.filter.Plan
 import unfiltered.filter.Plan.Intent
+import unfiltered.filter.request.ContextPath
 import unfiltered.request._
 import unfiltered.response._
 
 class MonsterPlan
-  extends Plan
-  with Monsters {
-val system: ActorSystem = ActorSystem("foo")
+  extends Monsters
+  with Plan {
+
+  val system: ActorSystem = ActorSystem("foo")
   val spike = system.actorOf(Spike.props)
 
   override def intent: Intent = {
-    case POST(Path( urls.basketPost(monsterType))) => spike !AddMonsterToBasket(BasketId("0") ,monsterByType(MonsterType(monsterType)))
+    case POST(Path(urls.authLogin(username))) =>
+//    case POST(Path(Seg("service" :: "auth" :: "logIn" :: username :: Nil))) =>
+      Ok
+
+    case POST(Path(urls.basketPost(monsterTypeName))) =>
+      spike ! AddMonsterToBasket(BasketId("0"), monsterByType(MonsterType(monsterTypeName)))
       Ok
 
     case Path(Seg("fisk" :: p :: Nil)) => ResponseString(p)
@@ -80,7 +87,7 @@ object urls {
   val order = orders / 'aggregateId
 
   // authService
-  val authLogin = service / "auth" / "logIn"
+  val authLogin = service / "auth" / "logIn" / 'username
   val authLogout = service / "auth" / "logOut"
   val authCustomer = service / "auth" / "customer"
   // monsterService

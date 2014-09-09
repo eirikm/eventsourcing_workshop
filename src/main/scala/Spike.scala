@@ -20,19 +20,24 @@ object Spike{
 }
 
 
-class Spike extends PersistentActor
-{
+class Spike extends PersistentActor {
 
-  var baskets = Map.empty[BasketId,Basket]
-  def updateState(evt: Event):Unit = {
-    case AddToBasket(basketId,basketLine) => println(s"basket update $basketId $basketLine")
+  var baskets = Map.empty[BasketId, Basket]
+
+  def updateState(evt: Event): Unit = {
+    evt match {
+      case AddToBasket(basketId, basketLine) => println(s"basket update $basketId $basketLine")
+    }
   }
 
-  override def receiveRecover: Receive = ???
+  override def receiveRecover: Receive = {
+    case foo =>
+  }
 
   override def receiveCommand: Receive = {
-    case AddMonsterToBasket(id,monster) =>
-        persist(AddToBasket(id,monster))(updateState)
+    case AddMonsterToBasket(id, monster) =>
+      persist(AddToBasket(id, monster))(updateState)
   }
+
   override def persistenceId: String = "basketSpike"
 }
