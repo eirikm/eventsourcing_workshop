@@ -10,6 +10,7 @@ class MonsterPlan
 
   val system: ActorSystem = ActorSystem("foo")
   val spike = system.actorOf(Spike.props)
+  val basketView = system.actorOf(BasketView.props)
 
   override def intent: Intent = {
     case POST(Path(urls.authLogin(username))) =>
