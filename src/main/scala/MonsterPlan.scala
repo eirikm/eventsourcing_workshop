@@ -53,9 +53,9 @@ class MonsterPlan
   val basketView = system.actorOf(BasketView.props)
 
   override def intent: Intent = {
-    case GET(Path(Seg("service" :: "auth" :: "customer" :: Nil))) => Ok ~> ResponseString("""{ "customerName": "rulle"}""")
+    case GET(Path( urls.authCustomer() )) => Ok ~> ResponseString("""{ "customerName": "rulle"}""")
 
-    case GET(Path(Seg("service" :: "auth" :: "logOut" :: Nil))) => Ok
+    case GET(Path(urls.authLogout())) => Ok
 
     case GET(Path(urls.basket())) => Ok ~> ResponseString(basketJson)
 
@@ -67,17 +67,9 @@ class MonsterPlan
 
     case POST(Path(urls.authLogin(username))) => Ok
 
-
-    case POST(Path(Seg("service" :: "auth" :: "logIn" :: username :: Nil))) =>
-      Ok
-
-
     case POST(Path(Seg("service" :: "basket" :: monsterTypeName :: Nil))) =>
-//    urls.basketPost(monsterTypeName))) =>
       spike ! AddMonsterToBasket(BasketId("0"), monsterByType(MonsterType(monsterTypeName)))
       Ok
-
-    case Path(Seg("fisk" :: p :: Nil)) => ResponseString(p)
   }
 }
 
