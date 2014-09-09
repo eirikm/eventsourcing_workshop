@@ -3,12 +3,16 @@ import unfiltered.filter.Plan.Intent
 import unfiltered.request._
 import unfiltered.response._
 
-class MonsterPlan extends Plan {
+class MonsterPlan
+  extends Plan
+  with Monsters {
 
   override def intent: Intent = {
     case Path(Seg("fisk" :: p :: Nil)) => ResponseString(p)
   }
+}
 
+trait Monsters {
   val monsterTypes = Vector(
     Monster(MonsterType("Ao (skilpadde)"), Price(100000)),
     Monster(MonsterType("Bakeneko"), Price(120000)),
@@ -42,6 +46,7 @@ class MonsterPlan extends Plan {
       monster => monster.monsterType -> monster
     }.toMap
 }
+
 
 case class BasketId(asString: String) extends AnyVal
 case class Price(asInt: Int) extends AnyVal
