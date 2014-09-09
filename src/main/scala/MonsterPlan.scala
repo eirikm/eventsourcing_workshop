@@ -1,10 +1,16 @@
 import akka.actor.ActorSystem
+import akka.util.Timeout
 import unfiltered.filter.Plan
 import unfiltered.filter.Plan.Intent
 import unfiltered.request._
 import unfiltered.response._
+import akka.pattern.ask
 
 import linx._
+
+import scala.concurrent.duration._
+import scala.concurrent.{Await, Future}
+
 object urls {
   //basketService
   val service = Root / "service"
@@ -20,48 +26,47 @@ object urls {
   val authLogin = service / "auth" / "logIn" / 'username
   val authLogout = service / "auth" / "logOut"
   val authCustomer = service / "auth" / "customer"
+
   // monsterService
   val monsterTypes = service / "monsterTypes"
 }
 
 class MonsterPlan
   extends Monsters
-  with Plan {
-  def makeMockOrders ={
-    """
-      |{"foo123" : {"date" : "2014-01-01",
-      |"sum" : 1000,
-      |"orderLineItems" : [
-      |{"name" : "Olav Thon", "number": 4, "price" : 10000 }
-      |]
-      |}}
-    """.stripMargin
-
-  }
-
-  def basketJson:String = {
-    """
-      |{"name" : "foo",
-      |"number" : 1 ,
-      |"price" : 100 }
-    """.stripMargin
-
-
-  }
+  with Plan
+  with MockData
+{
   val system: ActorSystem = ActorSystem("foo")
   val spike = system.actorOf(Spike.props)
   val basketView = system.actorOf(BasketView.props)
 
+  import system.dispatcher
+  import BasketViewProtocol._
+
   override def intent: Intent = {
-    case GET(Path( urls.authCustomer() )) => Ok ~> ResponseString("""{ "customerName": "rulle"}""")
+    case GET(Path( urls.authCustomer() )) => Ok ~> ResponseString(customerJson)
 
     case GET(Path(urls.authLogout())) => Ok
 
-    case GET(Path(urls.basket())) => Ok ~> ResponseString(basketJson)
+    case GET(Path(urls.basket())) =>
+      val basketFuture: Future[BasketViewProtocol.Basket] =
+        ask(basketView, GetBasket(BasketId("0")))(Timeout(5.seconds)).mapTo[BasketViewProtocol.Basket]
+
+      val basketFut2 = basketFuture.map {
+        case BasketViewProtocol.Basket(_, basketMap) =>
+          basketMap.values.map {
+            (line: BasketLine) =>
+              s""" "${line.monsterType.asString}": ${line.toJson} """
+          }.mkString("{", ",", "}")
+      }
+      val basketJson = Await.result(basketFut2, Duration.Inf)
+      println(basketJson)
+      Ok ~> ResponseString(basketJson) ~> JsonContent
 
     case GET(Path(urls.monsterTypes())) => Ok ~> ResponseString(monsterTypesAsJson)
 
-    case GET(Path(urls.basketSum())) => Ok ~> ResponseString("""{"sum" : 100000}""")
+    case GET(Path(urls.basketSum())) =>
+      Ok ~> ResponseString(sumJson)
 
     case GET(Path(urls.orders())) => Ok ~> ResponseString(makeMockOrders)
 
@@ -76,10 +81,10 @@ class MonsterPlan
 trait Monsters {
 
   val monsterTypes = Vector(
-    Monster(MonsterType("Ao (skilpadde)"), Price(100000)),
+    Monster(MonsterType("Ao_(skilpadde)"), Price(100000)),
     Monster(MonsterType("Bakeneko"), Price(120000)),
     Monster(MonsterType("Basilisk"), Price(175000)),
-    Monster(MonsterType("Det erymanthiske villsvin"), Price(25000)),
+    Monster(MonsterType("Det_erymanthiske_villsvin"), Price(25000)),
     Monster(MonsterType("Griff"), Price(12000)),
     Monster(MonsterType("Hamløper"), Price(8000)),
     Monster(MonsterType("Hippogriff"), Price(128000)),
@@ -115,6 +120,7 @@ trait Monsters {
 }
 
 
+
 case class BasketId(asString: String) extends AnyVal
 case class Price(asInt: Int) extends AnyVal
 case class OrderId(asString: String) extends AnyVal
@@ -122,8 +128,33 @@ case class MonsterType(asString: String) extends AnyVal
 
 case class Monster(monsterType: MonsterType, price: Price)
 case class Basket(id: BasketId, basketLines: Vector[BasketLine] = Vector.empty)
-case class BasketLine(monsterType: MonsterType, price: Price, amount: Int)
+case class BasketLine(monsterType: MonsterType, price: Price, amount: Int) {
+  def toJson =
+    s"""{ "name": "${monsterType.asString}", "number": "$amount", "price": "$price" }"""
+}
 
 case class OrderConfirmation(orderId: OrderId)
 case class Order(orderId: OrderId, lines: Vector[OrderLine])
 case class OrderLine(monsterType: MonsterType, price: Price, amount: Int)
+
+trait MockData {
+  val makeMockOrders = """
+                         |{"foo123" : {"date" : "2014-01-01",
+                         |"sum" : 1000,
+                         |"orderLineItems" : [
+                         |{"name" : "Olav Thon", "number": 4, "price" : 10000 }
+                         |]
+                         |}}
+                       """.stripMargin
+
+  val basketJson: String = """
+                             |{ "Ao_(skilpadde)" :
+                             | { "name" : "foo",
+                             |   "number" : 1 ,
+                             |   "price" : 100
+                             | }
+                             |}
+                           """.stripMargin
+  val customerJson: String = """{ "customerName": "rulle"}"""
+  val sumJson: String = """{"sum" : 100000}"""
+}

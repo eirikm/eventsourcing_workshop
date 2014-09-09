@@ -10,7 +10,7 @@ sealed trait Event
 case class AddMonsterToBasket(basketId: BasketId ,monster: Monster) extends Command
 case class RemoveMonsterFromBasket(basketId:BasketId, monster:Monster) extends Command
 
-case class AddToBasket( basketId:BasketId, monster : Monster) extends Event
+case class AddToBasket(basketId:BasketId, monster : Monster) extends Event
 case class RemoveFromBasket(basketId:BasketId,monster:Monster) extends Event
 
 object Spike{

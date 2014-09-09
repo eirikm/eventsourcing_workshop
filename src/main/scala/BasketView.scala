@@ -2,8 +2,13 @@ import akka.actor.Props
 import akka.persistence.PersistentView
 
 object BasketViewProtocol {
-  case class GetSum(id: BasketId)
-  case class Sum(id: BasketId, sum: Int)
+  sealed trait Query
+  case class GetSum(id: BasketId) extends Query
+  case class GetBasket(id: BasketId) extends Query
+
+  sealed trait Result
+  case class Sum(id: BasketId, sum: Int) extends Result
+  case class Basket(id: BasketId, asMap: Map[MonsterType, BasketLine]) extends Result
 }
 
 object BasketView {
@@ -21,7 +26,7 @@ class BasketView extends PersistentView {
     queries orElse eventHandler
 
   def eventHandler: Receive = {
-    case AddMonsterToBasket(_, monster) =>
+    case AddToBasket(_, monster) =>
       println("adding monster to basket in view")
       val basketLine = basket.getOrElse(
         monster.monsterType,
@@ -29,7 +34,7 @@ class BasketView extends PersistentView {
 
       basket = basket.updated(monster.monsterType, basketLine.copy(amount = basketLine.amount + 1))
 
-    case RemoveMonsterFromBasket(_, monster) =>
+    case RemoveFromBasket(_, monster) =>
       println("removing monster from basket")
       val basketLine = basket.get(monster.monsterType).filter(_.amount > 1)
 
@@ -50,5 +55,10 @@ class BasketView extends PersistentView {
         line => line.price.asInt * line.amount
       }.sum
       sender ! Sum(id, sum)
+
+    case GetBasket(id) =>
+      println("GetBasket")
+      println(basket)
+      sender ! Basket(id, basket)
   }
 }
